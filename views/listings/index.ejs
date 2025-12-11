@@ -1,0 +1,94 @@
+<% layout("/layouts/boilerplate") %>
+
+    <div id="filters">
+        <a href="/listings" class="filter text-decoration-none text-dark text-center">
+            <div><i class="fa-solid fa-border-all filter-icon"></i></div>
+            <p>All</p>
+        </a>
+
+        <a href="/listings?category=Cities" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Cities') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-city filter-icon"></i></div>
+            <p>Cities</p>
+        </a>
+
+        <a href="/listings?category=Mountains" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Mountains') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-mountain filter-icon"></i></div>
+            <p>Mountains</p>
+        </a>
+
+        <a href="/listings?category=Beaches" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Beaches') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-umbrella-beach filter-icon"></i></div>
+            <p>Beaches</p>
+        </a>
+
+        <a href="/listings?category=Pools" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Pools') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-person-swimming filter-icon"></i></div>
+            <p>Pools</p>
+        </a>
+
+        <a href="/listings?category=Farms" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Farms') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-tractor filter-icon"></i></div>
+            <p>Farms</p>
+        </a>
+
+        <a href="/listings?category=Resorts" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Resorts') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-hotel filter-icon"></i></div>
+            <p>Resorts</p>
+        </a>
+
+        <a href="/listings?category=Forests" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Forests') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-tree filter-icon"></i></div>
+            <p>Forests</p>
+        </a>
+        
+        <a href="/listings?category=Heritage" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Heritage') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-archway filter-icon"></i></div>
+            <p>Heritage</p>
+        </a>
+
+        <a href="/listings?category=Arctic" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Arctic') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-snowflake filter-icon"></i></div>
+            <p>Arctic</p>
+        </a>
+
+        <a href="/listings?category=Premium" 
+            class="filter text-decoration-none text-dark text-center <% if (category === 'Premium') { %>active-filter<% } %>">
+            <div><i class="fa-solid fa-crown filter-icon"></i></div>
+            <p>Premium</p>
+        </a>
+    </div>
+
+
+    <div class="row row-cols-lg-4 row-cols-md-2 row-cols-sm-1 mt-3">
+        <% for(let listing of listings) { %>
+            <a href="/listings/<%= listing._id %>" class="listing-link">
+            <div class="card col listing-card">
+                <img 
+                    src="<%= listing.image.url %>" 
+                    class="card-img-top listing-image" 
+                    alt="listing_image" 
+                    style="height: 15rem"
+                />
+                <div class="card-img-overlay"></div>
+                <div class="card-body">
+                    <p class="card-text-show">
+                        <b><%= listing.title %></b> <br>
+                        &#8377 <%= listing.price.toLocaleString("en-IN") %> / night
+                    </p>
+                </div>
+            </div>
+            </a>
+        <%} %>
+    </div>
+
+
+

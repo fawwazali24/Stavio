@@ -1,0 +1,205 @@
+<!-- Chatbot Widget (Minimized by default) -->
+<div id="chatbot-widget" class="chatbot-widget minimized">
+  <!-- Minimized Preview -->
+  <div id="chatbot-preview" class="chatbot-preview">
+    <div class="preview-content">
+      <div class="preview-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
+      <div class="preview-text">
+        <strong>Need Help?</strong>
+        <p>Chat with us</p>
+      </div>
+    </div>
+    <button id="chatbot-expand" class="preview-toggle">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Full Chatbot Container -->
+  <div id="chatbot-container" class="chatbot-container">
+    <div class="chatbot-header">
+      <h3>Stavio Assistant</h3>
+      <button id="chatbot-minimize" class="chatbot-minimize">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </button>
+    </div>
+    
+    <div id="chatbot-messages" class="chatbot-messages">
+      <div class="message bot-message">
+        <div class="message-content">
+          Hi! I'm your assistant. 
+          <br><br>
+          <strong>👉 Please login for a better personalized experience!</strong>
+          <br><br>
+          You can still ask me about available listings, amenities, locations, or pricing.
+        </div>
+      </div>
+    </div>
+  
+  <div class="chatbot-input-container">
+    <input 
+      type="text" 
+      id="chatbot-input" 
+      class="chatbot-input" 
+      placeholder="Ask about listings..."
+    />
+    <button id="chatbot-send" class="chatbot-send">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+// Chatbot JavaScript
+(function() {
+  const chatbotWidget = document.getElementById('chatbot-widget');
+  const chatbotPreview = document.getElementById('chatbot-preview');
+  const chatbotExpand = document.getElementById('chatbot-expand');
+  const chatbotContainer = document.getElementById('chatbot-container');
+  const chatbotMinimize = document.getElementById('chatbot-minimize');
+  const chatbotInput = document.getElementById('chatbot-input');
+  const chatbotSend = document.getElementById('chatbot-send');
+  const chatbotMessages = document.getElementById('chatbot-messages');
+  
+  let conversationId = localStorage.getItem('conversationId') || null;
+  let isLoading = false;
+  let isMinimized = true;
+
+  // Toggle chatbot expand/minimize
+  chatbotExpand.addEventListener('click', () => {
+    chatbotWidget.classList.remove('minimized');
+    chatbotWidget.classList.add('expanded');
+    isMinimized = false;
+    setTimeout(() => chatbotInput.focus(), 300);
+  });
+
+  chatbotMinimize.addEventListener('click', () => {
+    chatbotWidget.classList.remove('expanded');
+    chatbotWidget.classList.add('minimized');
+    isMinimized = true;
+  });
+
+  // Add message to chat
+  function addMessage(content, isUser = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    contentDiv.textContent = content;
+    
+    messageDiv.appendChild(contentDiv);
+    chatbotMessages.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+  }
+
+  // Add loading indicator
+  function addLoadingIndicator() {
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'message bot-message loading-message';
+    loadingDiv.innerHTML = `
+      <div class="message-content">
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    `;
+    chatbotMessages.appendChild(loadingDiv);
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    return loadingDiv;
+  }
+
+  // Send message to backend
+  async function sendMessage(message) {
+    if (isLoading || !message.trim()) return;
+    
+    isLoading = true;
+    addMessage(message, true);
+    chatbotInput.value = '';
+    
+    const loadingIndicator = addLoadingIndicator();
+    
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: message,
+          conversationId: conversationId
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.conversationId && !conversationId) {
+        conversationId = data.conversationId;
+        localStorage.setItem('conversationId', conversationId);
+      }
+      
+      loadingIndicator.remove();
+      addMessage(data.response);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      loadingIndicator.remove();
+      addMessage('Sorry, there was an error processing your request. Please try again.');
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Event listeners
+  chatbotSend.addEventListener('click', () => {
+    const message = chatbotInput.value.trim();
+    if (message) sendMessage(message);
+  });
+
+  chatbotInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const message = chatbotInput.value.trim();
+      if (message) sendMessage(message);
+    }
+  });
+
+  // Load conversation history if exists
+  async function loadHistory() {
+    if (!conversationId) return;
+    
+    try {
+      const response = await fetch(`/api/chat/history/${conversationId}`);
+      const data = await response.json();
+      
+      if (data.history && data.history.length > 1) {
+        // Clear default message
+        chatbotMessages.innerHTML = '';
+        
+        data.history.forEach(msg => {
+          addMessage(msg.userMessage, true);
+          addMessage(msg.aiResponse);
+        });
+      }
+    } catch (error) {
+      console.error('Error loading history:', error);
+    }
+  }
+
+  // Load history on page load
+  loadHistory();
+})();
+</script>
