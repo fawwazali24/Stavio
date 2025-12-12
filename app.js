@@ -32,8 +32,8 @@ app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
 
 
-const dbUrl = "mongodb://127.0.0.1:27017/stavio_updates";
-// process.env.ATLASDB_URL;
+// const dbUrl = "mongodb://127.0.0.1:27017/stavio_updates";
+const dbUrl =process.env.ATLASDB_URL;
 
 main()
     .then(()=>{
@@ -47,21 +47,21 @@ async function main() {
     await mongoose.connect(dbUrl);
 }
 
-// const store = MongoStore.create({
-//     mongoUrl: dbUrl,
-//     crypto: {
-//         secret: process.env.SECRET,
-//     },
-//     touchAfter: 24 * 3600,
-// });
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    crypto: {
+        secret: process.env.SECRET,
+    },
+    touchAfter: 24 * 3600,
+});
 
-// store.on("error", (err) => {
-//     console.log("Error in Mongo session Store", err);
-// });
+store.on("error", (err) => {
+    console.log("Error in Mongo session Store", err);
+});
 
 const sessionOptions = {
     // store,
-    secret: "mysupersecretcode",
+    secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
