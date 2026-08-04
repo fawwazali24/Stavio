@@ -111,62 +111,6 @@ async function getContextFromDB(query) {
 }
 
 
-// async function generateResponse(userMessage, context) {
-//   const systemPrompt = `You are a helpful assistant for an Airbnb-like property rental platform. 
-// Use the following property information to answer user questions accurately and helpfully.
-// If the information isn't in the context, politely say you don't have that information.
-
-// Available Properties:
-// ${context}
-
-// Guidelines:
-// - Provide concise, friendly responses
-// - Include property details when relevant (price, location, capacity, category)
-// - List the properties clearly with their key information
-// - Mention unique selling points (USPs/highlights) when discussing properties
-// - Help users find properties based on their needs (location, budget, guest count, bedrooms)
-// - Be conversational and helpful
-// - Encourage users to login for personalized recommendations and booking`;
-
-//   try {
-//     console.log('Calling Hugging Face API...');
-    
-//     // Using Hugging Face's official client
-//     const chatCompletion = await client.chatCompletion({
-//       model: "HuggingFaceH4/zephyr-7b-beta",
-//       messages: [
-//         {
-//           role: "system",
-//           content: systemPrompt
-//         },
-//         {
-//           role: "user",
-//           content: userMessage
-//         }
-//       ],
-//       max_tokens: 500,
-//       temperature: 0.7
-//     });
-
-//     const aiResponse = chatCompletion.choices[0].message.content;
-//     console.log('AI Response received:', aiResponse.substring(0, 100) + '...');
-//     console.log(aiResponse);
-    
-//     // If response is empty or too short, provide fallback
-//     if (!aiResponse || aiResponse.trim().length < 20) {
-//       console.log('Response too short, using fallback');
-//       return generateFallbackResponse(userMessage, context);
-//     }
-    
-//     return aiResponse.trim();
-    
-//   } catch (error) {
-//     console.error('AI API error:', error.message);
-//     return generateFallbackResponse(userMessage, context);
-//   }
-// } 
-//
-
 async function generateResponse(userMessage, context) {
   const systemPrompt = `You are a helpful assistant for an Airbnb-like property rental platform. 
 Use the following property information to answer user questions accurately and helpfully.
@@ -179,24 +123,24 @@ Guidelines:
 - Provide concise, friendly responses
 - Include property details when relevant (price, location, capacity, category)
 - List properties clearly
-- Mention unique selling points
 - Help users find properties based on their needs
-- Encourage users to login for personalized recommendations and booking.
+Respond in Markdown only.
+Use:
+- a short title
+- bullet points for details
+- short closing sentence
+Do not use tables.
   `;
 
   try {
     console.log("Calling Gemini API...");
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-lite",
+      model: "gemini-2.5-flash",
+      systemInstruction: systemPrompt,
     });
 
-    const result = await model.generateContent({
-      contents: [
-        { role: "system", parts: [{ text: systemPrompt }] },
-        { role: "user", parts: [{ text: userMessage }] },
-      ]
-    });
+    const result = await model.generateContent(userMessage);
 
     const aiResponse = result.response.text();
 

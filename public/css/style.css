@@ -423,8 +423,14 @@ body {
 
 /* Expanded Full Chatbot State */
 .chatbot-widget.expanded {
-  width: 380px;
-  height: 600px;
+  width: clamp(320px, 35vw, 520px);
+  height: clamp(480px, 70vh, 720px);
+  min-width: 320px;
+  min-height: 480px;
+  max-width: 90vw;
+  max-height: 90vh;
+  resize: both;
+  overflow: auto;
 }
 
 /* Preview Bar (Minimized State) */
@@ -628,6 +634,8 @@ body {
   word-wrap: break-word;
   line-height: 1.5;
   font-size: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .user-message {

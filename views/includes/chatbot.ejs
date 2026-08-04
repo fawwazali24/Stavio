@@ -96,7 +96,11 @@
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
-    contentDiv.textContent = content;
+    if (isUser) {
+      contentDiv.textContent = content;
+    } else {
+      contentDiv.innerHTML = DOMPurify.sanitize(marked.parse(content));
+    }
     
     messageDiv.appendChild(contentDiv);
     chatbotMessages.appendChild(messageDiv);
