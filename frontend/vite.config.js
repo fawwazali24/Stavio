@@ -9,10 +9,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/listings': {
-        target: 'http://localhost:7000',
-        bypass: keepReactNavigation,
-      },
       '/login': {
         target: 'http://localhost:7000',
         bypass: keepReactNavigation,

@@ -85,8 +85,8 @@ passport.deserializeUser(User.deserializeUser());
 //     res.send(registeredUser);
 // })
 
-app.use("/listings", listingRouter);
-app.use("/listings/:id/reviews", reviewRouter);
+app.use("/api/listings", listingRouter);
+app.use("/api/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
 app.use(chatbotRouter);
 

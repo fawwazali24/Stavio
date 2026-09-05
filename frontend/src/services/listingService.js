@@ -3,17 +3,22 @@ import { api } from './api'
 export const listingService = {
   getAll: (category) =>
     api.get(
-      `/listings${category ? `?category=${encodeURIComponent(category)}` : ''}`,
+      `/api/listings${category ? `?category=${encodeURIComponent(category)}` : ''}`,
     ),
-  search: (query) => api.get(`/listings/search?q=${encodeURIComponent(query)}`),
-  getById: (id) => api.get(`/listings/${id}`),
+  search: (query) =>
+    api.get(`/api/listings/search?q=${encodeURIComponent(query)}`),
+  getById: (id) => api.get(`/api/listings/${id}`),
   create: (formData) =>
-    api.request('/listings', { method: 'POST', body: formData, headers: {} }),
+    api.request('/api/listings', {
+      method: 'POST',
+      body: formData,
+      headers: {},
+    }),
   update: (id, formData) =>
-    api.request(`/listings/${id}`, {
+    api.request(`/api/listings/${id}`, {
       method: 'PUT',
       body: formData,
       headers: {},
     }),
-  remove: (id) => api.request(`/listings/${id}`, { method: 'DELETE' }),
+  remove: (id) => api.request(`/api/listings/${id}`, { method: 'DELETE' }),
 }
