@@ -1,58 +1,52 @@
-# Stavio 
+# Stavio
 
-**Stavio** is a full-stack web application that allows users to create, browse, and review property listings.  
-Built with **Node.js, Express, MongoDB, and EJS**, it includes user authentication, listing management, reviews,  
-search & filter features, and a built-in **Chatbot Assistant** for real-time user guidance.
-
----
+Stavio is a full-stack property listing platform where users can browse stays, search and filter listings, create their own listings, leave reviews, and receive help from an integrated chatbot assistant.
 
 ## Live Demo
 
-🔗 **https://stavio-1.onrender.com**
-
----
+**https://stavio-1.onrender.com**
 
 ## Tech Stack
 
-- **Frontend:** HTML, CSS, JavaScript, EJS (Embedded JavaScript Templates)
+- **Frontend:** React, Vite, React Router, CSS
 - **Backend:** Node.js, Express.js
-- **Database:** MongoDB Atlas + Mongoose
-- **Authentication:** Passport.js (Local Strategy)
-- **Image Storage:** Cloudinary
-- **Other Tools:** Express-session, Method-Override, Connect-Flash
-- **Extra Feature:** Integrated **Chatbot Assistant** for user support
-
----
+- **Database:** MongoDB Atlas with Mongoose
+- **Authentication:** Passport.js Local Strategy 
+- **Image Storage:** Cloudinary 
+- **Extra Feature:** Integrated Chatbot Assistant
 
 ## Features
 
-### User Authentication
-- Register, login, and logout
-- Password hashing & session-based authentication
+### Authentication
+
+- User registration, login, and logout
+- Password hashing through Passport Local Mongoose
+- Session-based authentication
+- Login prompts for protected actions
 
 ### Authorization
-- Only listing owners can edit or delete their own listings
+
+- Only authenticated users can create listings
+- Only listing owners can edit or delete their listings
+- Only authenticated users can submit reviews
 
 ### Listings
-- Create new listings with multiple image uploads
-- Edit or delete your listings
-- Browse all listings with pagination
+
+- Browse listings from MongoDB
+- View detailed listing information
+- Create and edit listings
+- Upload listing images 
+- Filter listings by category
+- Search by keyword
 
 ### Reviews
-- Add reviews to any listing
-- View all reviews for a listing
 
-### Search & Filter
-- Search listings by keyword
-- Filter listings by category (Apartments, Villas, Rooms, etc.)
+- View listing reviews and ratings
+- Submit star ratings and comments
 
 ### Chatbot Assistant
-- Get real-time help navigating Stavio  
-- Ask questions about listings, features, or actions  
-- Designed to improve user onboarding & support
 
-### Flash Messages
-- Instant feedback on actions like login, create, edit, delete
-
----
+- Ask questions about available listings, locations, categories, amenities, and pricing
+- Uses listing data to provide relevant responses
+- Persists conversation history 
 
