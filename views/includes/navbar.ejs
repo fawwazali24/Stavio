@@ -41,7 +41,7 @@
               <% } %>
 
               <% if(currUser) { %>
-                <li><a class="dropdown-item" href="/logout">Logout</a></li>
+                <li><a class="dropdown-item" href="/logout" id="logout-link">Logout</a></li>
               <% } %>
             </ul>
           </div>
@@ -55,3 +55,10 @@
     </div>
   </div>
 </nav>
+
+
+<script>
+  document.getElementById('logout-link')?.addEventListener('click', function() {
+    localStorage.removeItem('conversationId');
+  });
+</script>

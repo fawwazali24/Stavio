@@ -774,4 +774,8 @@ body {
     border-radius: 0;
   }
 }
+.welcome-message {
+  line-height: 1.25;
+}
+
 
