@@ -3,25 +3,20 @@ const router = express.Router();
 const User = require("../models/user.js");
 const wrapAsync = require("../utils/wrapAsync");
 const passport = require("passport");
-const { savedRedirectUrl } = require("../middleware.js");
 const userController = require("../controllers/users.js");
 
-router.route("/signup")
-.get(userController.renderSignupForm)
-.post(
+router.post("/signup",
     wrapAsync(userController.signup));
 
-
-router.route("/login")
-.get(userController.renderLoginForm)
-.post(
-    savedRedirectUrl,
-    passport.authenticate("local", {
-        failureRedirect: "/login", 
-        failureFlash: true 
-    }), 
-    userController.login
-);
+router.post("/login",
+    (req, res, next) => passport.authenticate("local", (err, user, info) => {
+        if (err) return next(err);
+        if (!user) return res.status(401).json({ error: info?.message || "Invalid username or password" });
+        req.logIn(user, (loginError) => {
+            if (loginError) return next(loginError);
+            userController.login(req, res);
+        });
+    })(req, res, next));
 
 router.get("/logout", userController.logout);
 

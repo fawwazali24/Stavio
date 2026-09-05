@@ -24,18 +24,10 @@ router.route("/")
 
 
 //New route
-router.get("/new", isLoggedIn ,listingController.renderNewForm);
-
 //search route
 router.get("/search", wrapAsync(listingController.searchListing));
 
 //Edit route
-router.get("/:id/edit",
-    isLoggedIn, 
-    isOwner,
-    wrapAsync(listingController.renderEditform)
-);
-
 //show, update and delete route
 router.route("/:id")
 .get(wrapAsync(listingController.showListing ))

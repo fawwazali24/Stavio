@@ -6,12 +6,9 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
-const methodOverride = require("method-override");
-const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
-const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js");
@@ -23,13 +20,11 @@ const userRouter = require("./routes/user.js");
 const chatbotRouter = require('./routes/chatbot.js');
 
 
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({extended: true}));
 app.use(express.json());  //Json requests for chatbot
-app.use(methodOverride("_method"));
-app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
+const frontendDist = path.join(__dirname, "frontend", "dist");
+app.use(express.static(frontendDist));
 
 
 // const dbUrl = "mongodb://127.0.0.1:27017/stavio_updates";
@@ -73,21 +68,12 @@ const sessionOptions = {
 
 
 app.use(session(sessionOptions));
-app.use(flash());
-
 app.use(passport.initialize());
 app.use(passport.session()); 
 passport.use(new LocalStrategy(User.authenticate()));
 
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
-
-app.use((req, res, next) =>{
-    res.locals.success = req.flash("success");
-    res.locals.error = req.flash("error");
-    res.locals.currUser = req.user;
-    next();
-});
 
 // app.get("/demouser", async (req, res) => {
 //     let fakeUser = new User({
@@ -99,24 +85,28 @@ app.use((req, res, next) =>{
 //     res.send(registeredUser);
 // })
 
-app.get("/", (req,res) =>{
-    res.redirect("/listings");
-});
-
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
 app.use(chatbotRouter);
 
-//issue resolved
+app.get("/api/auth/me", (req, res) => {
+    if (!req.user) return res.status(401).json({ error: "Not authenticated" });
+    res.json({ user: req.user });
+});
+
+app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api/")) return next();
+    res.sendFile(path.join(frontendDist, "index.html"));
+});
+
 app.all("*", (req, res, next) => {
    throw new ExpressError(400, "Page Not Found!");
 });
 
 app.use((err, req, res, next) => {
     let {statusCode=500, message="something went wrong"} = err;
-    res.status(statusCode).render("error.ejs", {message});
-    //res.status(statusCode).send(message);
+    res.status(statusCode).json({ error: message });
 });
 
 //  app.get("/testListing", async (req,res) =>{
@@ -133,8 +123,10 @@ app.use((err, req, res, next) => {
 //     res.send("Successful testing");
 // });
 
-app.listen(7000, () => {
-    console.log("Server is listening to port 7000");
+const port = process.env.PORT || 7000;
+
+app.listen(port, () => {
+    console.log(`Server is listening on port ${port}`);
 });
 
 

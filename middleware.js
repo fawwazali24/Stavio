@@ -8,25 +8,16 @@ module.exports.isLoggedIn = (req, res, next) => {
     if(!req.isAuthenticated()){
         //redirect url
         req.session.redirectUrl = req.originalUrl;
-        req.flash("error", "You must be logged in to create listing!");
-        return res.redirect("/login");
+        return res.status(401).json({ error: "You must be logged in" });
     }
     next();
 }
 
-module.exports.savedRedirectUrl = (req, res, next) => {
-    if(req.session.redirectUrl) {
-        res.locals.redirectUrl = req.session.redirectUrl;
-    }
-    next();
-};
-
 module.exports.isOwner = async (req, res, next) => {
     let {id} = req.params;
     let listing  = await Listing.findById(id);
-    if(!listing.owner._id.equals(res.locals.currUser._id)){
-        req.flash("error", "You do not have the access to edit this listing.");
-        return res.redirect(`/listings/${id}`);
+    if(!listing || !listing.owner.equals(req.user._id)){
+        return res.status(403).json({ error: "You do not have access to edit this listing" });
     }
 
     next();
@@ -56,9 +47,8 @@ module.exports.validateReview = (req, res, next) => {
 module.exports.isReviewAuthor = async (req, res, next) => {
     let {id, reviewId} = req.params;
     let review  = await Review.findById(reviewId);
-    if(!review.author._id.equals(res.locals.currUser._id)){
-        req.flash("error", "You are not the author of this review.");
-        return res.redirect(`/listings/${id}`);
+    if(!review || !review.author.equals(req.user._id)){
+        return res.status(403).json({ error: "You are not the author of this review" });
     }
 
     next();

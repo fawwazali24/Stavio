@@ -10,25 +10,20 @@ module.exports.index = async (req, res) => {
         listings = await Listing.find({});
     }
 
-    res.render("listings/index.ejs", { listings, category });
-};
-
-module.exports.renderNewForm = (req,res) =>{
-    res.render("listings/new.ejs");
+    res.json({ listings, category });
 };
 
 module.exports.showListing = async (req,res) =>{
     let {id} = req.params;
     const listing  = await Listing.findById(id).populate({path: "reviews", populate: {path: "author"},}).populate("owner");
     if(!listing){
-        req.flash("error", "Listing you requested for does not exist");
-        res.redirect("/listings");
+        return res.status(404).json({ error: "Listing you requested for does not exist" });
     };
-    //console.log(listing);
-    res.render("listings/show.ejs" , {listing});
+    res.json({ listing });
 };
 
 module.exports.createListing = async (req,res, next) => {
+        if (!req.file) return res.status(400).json({ error: "Listing image is required" });
         let url = req.file.path;
         let filename = req.file.filename;
         const newListing = new Listing(req.body.listing);
@@ -36,22 +31,8 @@ module.exports.createListing = async (req,res, next) => {
         newListing.image = {url,filename};
         //console.log(url,",,",filename);
         await newListing.save();
-        req.flash("success", "New Listing Created!");
-        res.redirect("/listings");
+        res.status(201).json({ message: "New Listing Created!", listing: newListing });
     };
-
-module.exports.renderEditform = async (req,res) => { 
-    let {id} = req.params;
-    const listing  = await Listing.findById(id);
-    if(!listing){
-        req.flash("error", "Listing you requested for does not exist");
-        res.redirect("/listings");
-    };
-    let originalImageUrl = listing.image.url;
-    originalImageUrl = originalImageUrl.replace("/upload", "/upload/h_300,w_250");
-    //console.log(originalImageUrl);
-    res.render("listings/edit.ejs", {listing, originalImageUrl});
-};
 
 module.exports.updateListing = async (req,res) => {
         let {id} = req.params;
@@ -64,23 +45,21 @@ module.exports.updateListing = async (req,res) => {
             await listing.save();
         }
 
-        req.flash("success", "Listing updated!");
-        res.redirect(`/listings/${id}`);
+        res.json({ message: "Listing updated!", listing });
     };
 
 module.exports.destroyListing = async (req,res) => {
     let {id} = req.params;
     const deletedListing = await Listing.findByIdAndDelete(id);
     //console.log(deletedLisitng);
-    req.flash("success", "Listing Deleted!");
-    res.redirect("/listings");
+    res.json({ message: "Listing Deleted!" });
 };
 
 module.exports.searchListing = async (req, res) => {
   const query = req.query.q;
 
   if (!query) {
-    return res.redirect("/listings"); // or render all listings
+    return res.json({ listings: [] });
   }
 
   // Case-insensitive search in title and description
@@ -110,5 +89,5 @@ module.exports.searchListing = async (req, res) => {
     ]
   });
 
-  res.render("listings/search.ejs", { listings, searchQuery: query });
+    res.json({ listings, searchQuery: query });
 };

@@ -1,9 +1,5 @@
 const User = require("../models/user.js");
 
-module.exports.renderSignupForm = (req, res) => {
-    res.render("users/signup.ejs");
-};
-
 module.exports.signup = async(req, res, next) => {
     try{
         let {username, email, password} = req.body;
@@ -15,24 +11,16 @@ module.exports.signup = async(req, res, next) => {
             if(err){
                 return next(err);
             }
-            req.flash("success", "Welcome to Stavio");
-            res.redirect("/listings");
+            res.json({ message: "Welcome to Stavio", user: registeredUser });
         });
     } catch(e) {
-        req.flash("error", e.message);
-        res.redirect("/signup");
+        res.status(400).json({ error: e.message });
     }
     
 };
 
-module.exports.renderLoginForm = (req, res) => {
-    res.render("users/login.ejs");
-};
-
 module.exports.login = async(req, res) => {
-        req.flash("success" ,"Weolcome to Stavio! You are logged in");
-        let redirectUrl = res.locals.redirectUrl || "/listings";
-        res.redirect(redirectUrl);
+    res.json({ message: "Welcome to Stavio", user: req.user });
 };
 
 module.exports.logout = (req, res, next) => {
@@ -40,7 +28,6 @@ module.exports.logout = (req, res, next) => {
         if(err) {
             return next(err);
         }
-        req.flash("success", "You are logged out now!");
-        res.redirect("/listings");
+        res.json({ message: "You are logged out now!" });
     }) ;
 };
