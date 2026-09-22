@@ -18,6 +18,7 @@ const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 const chatbotRouter = require('./routes/chatbot.js');
+const { connectRedis } = require("./utils/cache.js");
 
 
 app.use(express.urlencoded({extended: true}));
@@ -33,6 +34,7 @@ const dbUrl =process.env.ATLASDB_URL;
 main()
     .then(()=>{
         console.log("connected to DB");
+        return connectRedis();
     })
     .catch((err) =>{
         console.log(err);

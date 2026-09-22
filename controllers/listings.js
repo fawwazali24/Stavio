@@ -1,7 +1,12 @@
 const Listing = require("../models/listing.js");
+const { getJson, setJson, invalidateListings } = require("../utils/cache.js");
 
 module.exports.index = async (req, res) => {
     const { category } = req.query;
+  const cacheKey = `listing:index:${category || "all"}`;
+  const cachedListings = await getJson(cacheKey);
+
+  if (cachedListings) return res.json(cachedListings);
 
     let listings;
     if (category) {
@@ -10,16 +15,25 @@ module.exports.index = async (req, res) => {
         listings = await Listing.find({});
     }
 
-    res.json({ listings, category });
+    const response = { listings, category };
+    await setJson(cacheKey, response);
+    res.json(response);
 };
 
 module.exports.showListing = async (req,res) =>{
     let {id} = req.params;
+    const cacheKey = `listing:detail:${id}`;
+    const cachedListing = await getJson(cacheKey);
+
+    if (cachedListing) return res.json(cachedListing);
+
     const listing  = await Listing.findById(id).populate({path: "reviews", populate: {path: "author"},}).populate("owner");
     if(!listing){
         return res.status(404).json({ error: "Listing you requested for does not exist" });
     };
-    res.json({ listing });
+    const response = { listing };
+    await setJson(cacheKey, response);
+    res.json(response);
 };
 
 module.exports.createListing = async (req,res, next) => {
@@ -31,6 +45,7 @@ module.exports.createListing = async (req,res, next) => {
         newListing.image = {url,filename};
         //console.log(url,",,",filename);
         await newListing.save();
+        await invalidateListings();
         res.status(201).json({ message: "New Listing Created!", listing: newListing });
     };
 
@@ -45,12 +60,14 @@ module.exports.updateListing = async (req,res) => {
             await listing.save();
         }
 
+          await invalidateListings();
         res.json({ message: "Listing updated!", listing });
     };
 
 module.exports.destroyListing = async (req,res) => {
     let {id} = req.params;
     const deletedListing = await Listing.findByIdAndDelete(id);
+    await invalidateListings();
     //console.log(deletedLisitng);
     res.json({ message: "Listing Deleted!" });
 };
@@ -61,6 +78,11 @@ module.exports.searchListing = async (req, res) => {
   if (!query) {
     return res.json({ listings: [] });
   }
+
+  const cacheKey = `listing:search:${query.toLowerCase()}`;
+  const cachedResults = await getJson(cacheKey);
+
+  if (cachedResults) return res.json(cachedResults);
 
   // Case-insensitive search in title and description
   const regex = new RegExp(query, 'i');
@@ -89,5 +111,7 @@ module.exports.searchListing = async (req, res) => {
     ]
   });
 
-    res.json({ listings, searchQuery: query });
+    const response = { listings, searchQuery: query };
+    await setJson(cacheKey, response);
+    res.json(response);
 };

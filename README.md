@@ -17,6 +17,18 @@ Stavio is a full-stack property listing platform where users can browse stays, s
 
 ## Features
 
+### Redis caching
+
+The listings read endpoints use Redis when `REDIS_URL` is configured. Without it, the application continues to use MongoDB directly.
+
+Set this environment variable locally or in the Render service environment:
+
+```text
+REDIS_URL=redis://localhost:6379
+```
+
+For a hosted Redis provider, use the provider's complete connection URL. Use `rediss://` when the provider requires TLS.
+
 ### Authentication
 
 - User registration, login, and logout
