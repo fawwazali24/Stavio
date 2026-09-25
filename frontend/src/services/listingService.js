@@ -8,6 +8,12 @@ export const listingService = {
   search: (query) =>
     api.get(`/api/listings/search?q=${encodeURIComponent(query)}`),
   getById: (id) => api.get(`/api/listings/${id}`),
+  book: (id, dates, idempotencyKey) =>
+    api.request(`/api/listings/${id}/book`, {
+      method: 'POST',
+      body: JSON.stringify(dates),
+      headers: { 'Idempotency-Key': idempotencyKey },
+    }),
   create: (formData) =>
     api.request('/api/listings', {
       method: 'POST',

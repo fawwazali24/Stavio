@@ -12,16 +12,20 @@ import ReviewCard from '../components/ReviewCard'
 import ReviewForm from '../components/ReviewForm'
 import { fallbackListings } from '../utils/mockData'
 import { listingService } from '../services/listingService'
-import { authService } from '../services/authService'
 import { useAuth } from '../context/AuthContext'
 
 export default function ListingDetailsPage() {
   const { id } = useParams()
   const [listing, setListing] = useState(null)
   const [usingFallback, setUsingFallback] = useState(false)
-  const [reserved, setReserved] = useState(false)
+  const [bookingDates, setBookingDates] = useState({
+    checkIn: '',
+    checkOut: '',
+  })
+  const [bookingKey, setBookingKey] = useState('')
+  const [bookingState, setBookingState] = useState({ status: 'idle', message: '' })
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   useEffect(() => {
     listingService
       .getById(id)
@@ -49,16 +53,66 @@ export default function ListingDetailsPage() {
         listing.reviews.length
       ).toFixed(1)
     : 'No ratings yet'
+  const updateBookingDate = (event) => {
+    const { name, value } = event.target
+    setBookingDates((current) => ({ ...current, [name]: value }))
+    setBookingKey('')
+    setBookingState({ status: 'idle', message: '' })
+  }
   const reserve = async () => {
-    try {
-      await authService.me()
-      setReserved(true)
-    } catch {
+    if (authLoading) return
+    if (!user) {
       navigate('/login', {
         state: {
           message: 'Please login first.',
           from: `/listings/${listing._id}`,
         },
+      })
+      return
+    }
+    if (usingFallback) {
+      setBookingState({
+        status: 'error',
+        message: 'Booking is unavailable while viewing demo data.',
+      })
+      return
+    }
+    if (!bookingDates.checkIn || !bookingDates.checkOut) {
+      setBookingState({
+        status: 'error',
+        message: 'Choose both arrival and departure dates.',
+      })
+      return
+    }
+    if (bookingDates.checkOut <= bookingDates.checkIn) {
+      setBookingState({
+        status: 'error',
+        message: 'Departure must be after arrival.',
+      })
+      return
+    }
+    const nextKey = bookingKey || crypto.randomUUID()
+    setBookingKey(nextKey)
+    setBookingState({ status: 'loading', message: '' })
+    try {
+      const response = await listingService.book(
+        listing._id,
+        bookingDates,
+        nextKey,
+      )
+      setBookingState({
+        status: 'success',
+        message: response.replay
+          ? 'Your booking was confirmed again.'
+          : 'Your booking is confirmed.',
+      })
+    } catch (error) {
+      setBookingState({
+        status: 'error',
+        message:
+          error.status === 409
+            ? 'Those dates are no longer available.'
+            : error.message,
       })
     }
   }
@@ -129,7 +183,13 @@ export default function ListingDetailsPage() {
             <ReviewForm listingId={listing._id} />
           </div>
         </div>
-        <aside className="booking-panel">
+        <form
+          className="booking-panel"
+          onSubmit={(event) => {
+            event.preventDefault()
+            reserve()
+          }}
+        >
           <div className="price-line">
             <strong>₹{Number(listing.price).toLocaleString('en-IN')}</strong>
             <span>/ night</span>
@@ -152,11 +212,45 @@ export default function ListingDetailsPage() {
               {listing.checkout} check-out
             </span>
           </div>
-          <button className="button button-coral" onClick={reserve}>
-            {reserved ? 'Reservation requested' : 'Reserve'}
+          <div className="booking-fields">
+            <label className="field">
+              Arrival
+              <input
+                name="checkIn"
+                type="date"
+                value={bookingDates.checkIn}
+                onChange={updateBookingDate}
+              />
+            </label>
+            <label className="field">
+              Departure
+              <input
+                name="checkOut"
+                type="date"
+                value={bookingDates.checkOut}
+                min={bookingDates.checkIn || undefined}
+                onChange={updateBookingDate}
+              />
+            </label>
+          </div>
+          <button
+            type="submit"
+            className="button button-coral"
+            disabled={authLoading || bookingState.status === 'loading'}
+          >
+            {bookingState.status === 'loading'
+              ? 'Reserving...'
+              : bookingState.status === 'success'
+                ? 'Reservation confirmed'
+                : 'Reserve'}
           </button>
+          {bookingState.message && (
+            <p className={`booking-message ${bookingState.status}`}>
+              {bookingState.message}
+            </p>
+          )}
           <p className="quiet-note">You won't be charged yet</p>
-        </aside>
+        </form>
       </div>
     </section>
   )

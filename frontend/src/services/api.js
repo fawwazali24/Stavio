@@ -16,7 +16,11 @@ async function request(path, options = {}) {
       `Expected JSON from ${path}, received ${contentType || 'an unknown response'}`,
     )
   const data = await response.json()
-  if (!response.ok) throw new Error(data.error || 'Request failed')
+  if (!response.ok) {
+    const error = new Error(data.error || 'Request failed')
+    error.status = response.status
+    throw error
+  }
   return data
 }
 

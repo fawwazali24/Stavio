@@ -390,6 +390,39 @@ h1 {
   padding: 24px;
   box-shadow: 0 12px 30px #27383d0b;
 }
+.booking-fields {
+  display: grid;
+  gap: 12px;
+  margin: 22px 0 16px;
+}
+.booking-fields .field {
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.booking-fields input {
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: #222;
+  background: #fff;
+}
+.booking-fields input:focus {
+  outline: 2px solid #20c7d455;
+  border-color: var(--cyan);
+}
+.booking-message {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.booking-message.success {
+  color: #16835f;
+}
+.booking-message.error {
+  color: var(--coral);
+}
 .price-line {
   margin-bottom: 21px;
 }

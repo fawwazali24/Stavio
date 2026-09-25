@@ -6,6 +6,7 @@ const {listingSchema} = require("../schema.js");
 const Listing  = require("../models/listing.js");
 const {isLoggedIn, isOwner, validateListing} = require("../middleware.js");
 const listingController = require("../controllers/listings.js");
+const bookingController = require("../controllers/bookings.js");
 const multer = require("multer");
 const {storage} = require("../cloudConfig.js")
 const upload = multer({storage}); //multer will upload directly to cloud storage
@@ -26,6 +27,12 @@ router.route("/")
 //New route
 //search route
 router.get("/search", wrapAsync(listingController.searchListing));
+
+router.post(
+    "/:id/book",
+    isLoggedIn,
+    wrapAsync(bookingController.bookListing),
+);
 
 //Edit route
 //show, update and delete route
