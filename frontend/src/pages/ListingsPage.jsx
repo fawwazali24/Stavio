@@ -7,18 +7,38 @@ import { fallbackListings } from '../utils/mockData'
 
 export default function ListingsPage() {
   const [params] = useSearchParams()
-  const [listings, setListings] = useState(fallbackListings)
+  const [listings, setListings] = useState([])
   const [usingFallback, setUsingFallback] = useState(false)
+  const [loading, setLoading] = useState(true)
   const category = params.get('category') || 'All'
   useEffect(() => {
+    let active = true
+    setLoading(true)
     listingService
       .getAll(category === 'All' ? '' : category)
       .then((data) => {
+        if (!active) return
         setListings(data.listings || [])
         setUsingFallback(false)
       })
-      .catch(() => setUsingFallback(true))
+      .catch(() => {
+        if (!active) return
+        setListings(fallbackListings)
+        setUsingFallback(true)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
   }, [category])
+  if (loading)
+    return (
+      <section className="page-wrap">
+        <p className="status">Loading stays...</p>
+      </section>
+    )
   const visible =
     category === 'All' || usingFallback
       ? listings
